@@ -36,7 +36,7 @@ def schedule_facebook_posts():
         image_filename = f"{item['id']}.png"
         location=item['location'].split(',')[0].strip()
         IMAGE_PATH = os.path.join("image", image_filename)
-        CAPTION = f"{item["title"]} #kaimurnews #kaimur #{location} #{location}news"
+        CAPTION = f"{item['title']} #kaimurnews #kaimur #{location} #{location}news"
         scheduled_time = int((base_time + timedelta(minutes=30 * scheduled_count)).timestamp())
 
         if not os.path.exists(IMAGE_PATH):
