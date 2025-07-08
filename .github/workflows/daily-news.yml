@@ -3,7 +3,7 @@ name: Daily Python News Runner
 on:
   schedule:
     - cron: "30 9 * * *"   # हर दिन सुबह 9:30 UTC = शाम 3:00 IST
-  workflow_dispatch:         # Allow manual run
+  workflow_dispatch:         # मैन्युअली रन करने की सुविधा
 
 jobs:
   run-script:
@@ -26,3 +26,10 @@ jobs:
       - name: Run data.py script
         run: |
           python data.py
+
+      - name: Commit and push changes if any
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || (git commit -m "🔄 Daily data update $(date +'%Y-%m-%d')" && git push)
