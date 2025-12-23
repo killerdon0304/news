@@ -72,6 +72,7 @@ def create_news_image(banner_head, headline, id):
     filename = f"image/{id}.png"
     bg.convert("RGB").save(filename)
     print(f"✅ Saved as '{filename}'")
+    return filename
 
 # --- Example Usage ---
 if __name__ == "__main__":

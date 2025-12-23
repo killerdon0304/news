@@ -2,10 +2,8 @@ import json, re
 import os
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from fbReelsPost import schedule_facebook_reels
-from fbimage import schedule_facebook_posts
-from image import create_news_image
-from reels import image_to_video
+# from fbimage import schedule_facebook_posts
+# from image import create_news_image
 from req import fetch_feed
 
 image_folder='image'
@@ -74,16 +72,11 @@ def main():
                         "location": item['by_line'],
                         "post": True
                     })
-                    img_path=create_news_image(
-                        banner_head=item['by_line'],
-                        headline=item['summary_text'],
-                        id=item['id']
-                    )
-                    image_to_video(
-                    image_path=img_path,
-                    voice_text=item['title'],
-                    id=item['id'],
-                )
+                    # create_news_image(
+                    #     banner_head=item['by_line'],
+                    #     headline=item['summary_text'],
+                    #     id=item['id']
+                    # )
                     print("new data mila hai")
                 # print(item['id']+ item['title'])
         
@@ -93,5 +86,4 @@ def main():
 
 if __name__ == "__main__":
   main()
-  schedule_facebook_reels()
 #   schedule_facebook_posts()
