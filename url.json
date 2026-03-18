@@ -1,0 +1,14 @@
+[
+    {
+        "type":"district",
+        "feedId":"news-in-kaimur"
+    },
+    {
+        "type":"city",
+        "feedId":"news-in-bhabua"
+    },
+    {
+        "type":"city",
+        "feedId":"news-in-mohania"
+    }
+]

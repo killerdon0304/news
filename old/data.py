@@ -1,10 +1,13 @@
-
-# print(cards)
+import json, re
+import os
 from datetime import datetime
-import json, os, re
+from zoneinfo import ZoneInfo
+from fbReelsPost import schedule_facebook_reels
+from fbimage import schedule_facebook_posts
 from image import create_news_image
 from reels import image_to_video
-from req import req
+from req import fetch_feed
+
 image_folder='image'
 
 today = datetime.now().strftime("%d")
@@ -48,36 +51,28 @@ def alredy_exit():
 def saveJson(name, data):
     with open(os.path.join("json",f"{name}.json"), "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
+
 def main():
-    # 📥 JSON file read
-    with open("url.json", "r", encoding="utf-8") as f:
-        data = json.load(f)
+    # d = load_existing_json("feed_data.json")
+    blockCodes = ['BR_KM_BHABUA']
+    for block in blockCodes:
+        d= fetch_feed(block= block)
 
-    # 🔁 Loop
-    for item in data:
-        type_ = item.get("type")
-        feed_id = item.get("feedId")
-        
-        d= req(type= type_, feed_id= feed_id)
-
-        # a = d['data']['card_list']
+        a = d['data']['card_list']
         deta = alredy_exit()
         # print(deta)
-        for items in d:
-            item = items["card_obj"]
+        for item in a:
             by_line = item.get("by_line", "").lower()
             if "kaimur" in by_line and re.search(rf"\b{today}\b", by_line):
                 
                 ids = [entry['id'] for entry in deta['data']]
-                if item['id'] not in ids and item['id'] not in extIds and item.get('summary_text', '') != '':
+                if item['id'] not in ids and item['id'] not in extIds and item['summary_text'] != '':
                     deta['data'].append({
                         "id": item['id'],
                         "title": re.sub(r'<[^>]+>', '', item['title']),
                         "summary_text": item['summary_text'],
                         "location": item['by_line'],
-                        "post": True,
-                        "img": item['share_image'],
-                        "vid":item['video_url']
+                        "post": True
                     })
                     img_path=create_news_image(
                         banner_head=item['by_line'],
@@ -94,7 +89,9 @@ def main():
         
         saveJson(name='deta', data= deta)
         print(extIds)
-
+    
 
 if __name__ == "__main__":
   main()
+  schedule_facebook_reels()
+#   schedule_facebook_posts()

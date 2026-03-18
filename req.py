@@ -1,78 +1,60 @@
-import requests
-from datetime import datetime, timedelta, timezone
-import random
+
+
 import json
 
-def generate_device_id():
-    return "web_" + ''.join(random.choices("abcdefghijklmnopqrstuvwxyz0123456789", k=22))
+import requests
 
-def get_timestamp_ms():
-    # Define IST timezone (UTC+5:30)
-    ist = timezone(timedelta(hours=5, minutes=30))
-    # Get current IST time
-    now_ist = datetime.now(ist)
-    # Convert to Unix timestamp in ms
-    return int(now_ist.timestamp() * 1000)
-
-# print(get_timestamp_ms())
-# exit()
-
-def get_user_agent():
-    android_version = "8.0.0"
-    device_model = "SM-G955U"
-    chrome_version = "137.0.0.0"
-    return (
-        f"Mozilla/5.0 (Linux; Android {android_version}; {device_model} Build/R16NW) "
-        f"AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{chrome_version} Mobile Safari/537.36"
-    )
-
-def get_headers(block):
-    chrome_version = "137"
-    return {
-        "accept": "*/*",
-        "accept-encoding": "gzip, deflate, br, zstd",
-        "accept-language": "en-IN,en-GB;q=0.9,en-US;q=0.8,en;q=0.7,hi;q=0.6",
-        "content-type": "application/json",
+def req(type, feed_id):
+    url = f"https://public.app/{type}/{feed_id}"
+    headers = {
+        "accept": "text/x-component",
+        "content-type": "text/plain;charset=UTF-8",
         "origin": "https://public.app",
-        "referer": "https://public.app/",
-        "sec-ch-ua": f'"Google Chrome";v="{chrome_version}", "Chromium";v="{chrome_version}", "Not/A)Brand";v="24"',
-        "sec-ch-ua-mobile": "?1",
-        "sec-ch-ua-platform": '"Android"',
-        "sec-fetch-dest": "empty",
-        "sec-fetch-mode": "cors",
-        "sec-fetch-site": "same-origin",
-        "user-agent": get_user_agent(),
-        "x-device-id": generate_device_id(),
-        "x-location-updated-at": str(get_timestamp_ms()),
-        "x-location-updated-type": "IP",
-        "x-region": "IN",
-        "x-sub-district-code": block,
-        "X-LAST-SUB-DISTRICT-CODE": block,
-        "X-LOCATION-UPDATE-TYPE": "DISTRICT_CODE"
+        "referer": url,
+        "user-agent": "Mozilla/5.0",
+        "cookie":"device_id=web_ju939w177364yGPImI5478735HZPC0pU; device_info=%7B%22auth_token%22%3A%22kjbm9cyxqnxc88j9gylos7j0tn1773745378739%22%2C%22reupload_photo%22%3Afalse%2C%22user_name%22%3A%22%22%2C%22is_uname_valid%22%3Atrue%2C%22fresh_chat_restore_ID%22%3A%22%22%2C%22user_display_name%22%3A%22%22%2C%22user_bio%22%3A%22%22%2C%22error_message%22%3A%22%22%2C%22full_contacts_sync%22%3Afalse%7D",
+
+        "next-action": "7fb28e9046fe4634a5184698cabfc4f91b4b1dc311",
+        "next-router-state-tree": "%5B%22%22%2C%7B%22children%22%3A%5B%22(location)%22%2C%7B%22children%22%3A%5B%22city%22%2C%7B%22children%22%3A%5B%5B%22city_slug%22%2C%22news-in-bhabua%22%2C%22d%22%5D%2C%7B%22children%22%3A%5B%22__PAGE__%22%2C%7B%7D%2Cnull%2Cnull%5D%7D%2Cnull%2Cnull%5D%7D%2Cnull%2Cnull%5D%7D%2Cnull%2Cnull%5D%7D%2Cnull%2Cnull%2Ctrue%5D",
     }
 
-def fetch_feed(block):
-    url = "https://public.app/api/getFeed?max_cards=500"
-    headers = get_headers(block = block)
-    data = {}  # Can be extended if the API supports filters
-    response = requests.post(url, headers=headers, json=data)
+    # ✅ Tumhara diya hua body
+    payload = [
+        {
+            "type": type,
+            "feedId": feed_id,
+            
+            "maxCards": 20
+        }
+    ]
 
-    if response.status_code == 200:
-        try:
-            # print(response.json())
-            return response.json()
-        except json.JSONDecodeError:
-            print("⚠️ Could not parse JSON")
-            return None
-    else:
-        print(f"❌ Failed: {response.status_code}")
-        return None
+    response = requests.post(url, headers=headers, data=json.dumps(payload))
+
+    print("Status:", response.status_code)
+    response.encoding = "utf-8"
+    # 🔥 Step 1: raw text ko lines me split karo
+    lines = response.text.strip().split("\n")
+
+    parsed = {}
+
+    for line in lines:
+        if ":" in line:
+            key, value = line.split(":", 1)
+            try:
+                parsed[key] = json.loads(value)
+            except:
+                pass
+
+    # ✅ main data (line "1")
+    main_data = parsed.get("1", {})
+
+    # 🎯 card_list nikaalo
+    cards = main_data.get("card_list", [])
+
+    print("\nTotal cards:", len(cards))
+    return cards
 
 
 
 if __name__ == "__main__":
-    feed = fetch_feed('BR_KM_BHABUA')
-    print(feed)
-    # parse_feed(feed)
-    # with open("feed_data.json", "w", encoding="utf-8") as f:
-    #     json.dump(feed, f, ensure_ascii=False, indent=4)
+    req('https://public.app/city/news-in-bhabua')

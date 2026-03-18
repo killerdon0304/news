@@ -1,5 +1,2 @@
 requests
-Pillow
-python-dotenv
-moviepy
-gTTS
+beautifulsoup4
